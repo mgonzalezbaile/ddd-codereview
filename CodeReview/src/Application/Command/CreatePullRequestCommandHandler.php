@@ -7,8 +7,9 @@ namespace CodeReview\Application\Command;
 use CodeReview\Domain\PullRequest;
 use CodeReview\Domain\PullRequestRepository;
 use Common\Application\Command\Command;
+use Common\Application\Command\CommandHandler;
 
-class CreatePullRequestCommandHandler
+class CreatePullRequestCommandHandler implements CommandHandler
 {
     /**
      * @var PullRequestRepository
@@ -23,7 +24,7 @@ class CreatePullRequestCommandHandler
     /**
      * @param CreatePullRequestCommand $command
      */
-    public function handle(Command $command)
+    public function handle(Command $command): void
     {
         $pullRequest = new PullRequest($this->repository, $command->code(), $command->writer());
 

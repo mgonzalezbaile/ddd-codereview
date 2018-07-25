@@ -22,7 +22,7 @@ class CreatePullRequestTest extends TestCase
         $writer     = 'some writer';
         $repository = InMemoryPullRequestRepository::withFixedId($id);
 
-        $command        = new CreatePullRequestCommand($id, $code, $writer);
+        $command        = new CreatePullRequestCommand($code, $writer);
         $commandHandler = new CreatePullRequestCommandHandler($repository);
         $commandHandler->handle($command);
 
@@ -43,24 +43,7 @@ class CreatePullRequestTest extends TestCase
         $writer     = 'some writer';
         $repository = InMemoryPullRequestRepository::withFixedId($id);
 
-        $command        = new CreatePullRequestCommand($id, $code, $writer);
-        $commandHandler = new CreatePullRequestCommandHandler($repository);
-        $commandHandler->handle($command);
-    }
-
-    /**
-     * @test
-     */
-    public function shouldFail_when_idIsNotUuid()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-
-        $code       = 'some code';
-        $id         = 'non uuid';
-        $writer     = 'some writer';
-        $repository = InMemoryPullRequestRepository::withFixedId($id);
-
-        $command        = new CreatePullRequestCommand($id, $code, $writer);
+        $command        = new CreatePullRequestCommand($code, $writer);
         $commandHandler = new CreatePullRequestCommandHandler($repository);
         $commandHandler->handle($command);
     }
@@ -77,7 +60,7 @@ class CreatePullRequestTest extends TestCase
         $writer     = '';
         $repository = InMemoryPullRequestRepository::withFixedId($id);
 
-        $command        = new CreatePullRequestCommand($id, $code, $writer);
+        $command        = new CreatePullRequestCommand($code, $writer);
         $commandHandler = new CreatePullRequestCommandHandler($repository);
         $commandHandler->handle($command);
     }

@@ -5,7 +5,7 @@
          colors="true">
     <testsuites>
         <testsuite name="Code Review Tests">
-            <directory>./CodeReview/tests</directory>
+            <directory>./*/tests</directory>
         </testsuite>
     </testsuites>
 

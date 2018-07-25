@@ -16,28 +16,17 @@ class CreatePullRequestCommand implements Command
     /**
      * @var string
      */
-    private $id;
-
-    /**
-     * @var string
-     */
     private $writer;
 
-    public function __construct(string $id, string $code, string $writer)
+    public function __construct(string $code, string $writer)
     {
         $this->code   = $code;
-        $this->id     = $id;
         $this->writer = $writer;
     }
 
     public function code(): string
     {
         return $this->code;
-    }
-
-    public function id(): string
-    {
-        return $this->id;
     }
 
     public function writer(): string
