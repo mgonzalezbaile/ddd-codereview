@@ -13,6 +13,7 @@ class MiddlewarePipelineFactory
     {
         $nextMiddleware = function (Command $command) {};
 
+        $middlewares = array_reverse($middlewares);
         foreach ($middlewares as $middleware) {
             $nextMiddleware = function (Command $command) use ($middleware, $nextMiddleware) {
                 $middleware($command, $nextMiddleware);

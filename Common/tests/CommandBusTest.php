@@ -17,9 +17,11 @@ class CommandBusTest extends TestCase
      */
     public function shouldExecuteAllMiddlewaresInBus()
     {
-        $middleware1 = $this->middlewareSpy();
-        $middleware2 = $this->middlewareSpy();
-        $middleware3 = $this->middlewareSpy();
+        $executionTracker = $this->executionOrderTracker();
+
+        $middleware1 = $this->middlewareSpy('first', $executionTracker);
+        $middleware2 = $this->middlewareSpy('second', $executionTracker);
+        $middleware3 = $this->middlewareSpy('third', $executionTracker);
 
         $this
             ->commandBusFake(
@@ -34,6 +36,8 @@ class CommandBusTest extends TestCase
         $this->assertTrue($middleware1->isCalled());
         $this->assertTrue($middleware2->isCalled());
         $this->assertTrue($middleware3->isCalled());
+
+        $this->assertEquals(['first', 'second', 'third'], $executionTracker->classesExecuted());
     }
 
     private function commandDummy(): Command
@@ -42,17 +46,49 @@ class CommandBusTest extends TestCase
         };
     }
 
-    private function middlewareSpy(): CommandMiddleware
+    private function executionOrderTracker()
     {
-        return new class() implements CommandMiddleware {
+        return new class() {
+            private $classesExecuted = [];
+
+            public function trackExecution(string $classExecuted)
+            {
+                $this->classesExecuted[] = $classExecuted;
+            }
+
+            public function classesExecuted(): array
+            {
+                return $this->classesExecuted;
+            }
+        };
+    }
+
+    private function middlewareSpy(string $middlewareName, $executionTracker): CommandMiddleware
+    {
+        return new class($middlewareName, $executionTracker) implements CommandMiddleware {
             /**
              * @var bool
              */
             private $isCalled = false;
 
+            /**
+             * @var string
+             */
+            private $name;
+
+            private $tracker;
+
+            public function __construct(string $name, $tracker)
+            {
+                $this->name            = $name;
+                $this->tracker         = $tracker;
+            }
+
             public function __invoke(Command $command, callable $nextMiddleware): void
             {
                 $this->isCalled = true;
+
+                $this->tracker->trackExecution($this->name);
 
                 $nextMiddleware($command);
             }
