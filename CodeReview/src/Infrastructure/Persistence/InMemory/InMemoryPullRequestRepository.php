@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace CodeReview\Infrastructure\Persistence\InMemory;
 
-use CodeReview\Domain\PullRequest;
 use CodeReview\Domain\PullRequestRepository;
+use CodeReview\Domain\PullRequestState;
+use Common\Domain\Event\EventStream;
 use Ramsey\Uuid\Uuid;
 
 class InMemoryPullRequestRepository implements PullRequestRepository
 {
     /**
-     * @var PullRequest[]
+     * @var PullRequestState[]
      */
     private $pullRequests;
 
@@ -19,6 +20,11 @@ class InMemoryPullRequestRepository implements PullRequestRepository
      * @var string|null
      */
     private $id;
+
+    /**
+     * @var EventStream
+     */
+    private $eventStream;
 
     public static function withFixedId(string $id)
     {
@@ -40,13 +46,23 @@ class InMemoryPullRequestRepository implements PullRequestRepository
         return $this->id ?? Uuid::uuid4()->toString();
     }
 
-    public function save(PullRequest $pullRequest): void
+    public function save(PullRequestState $pullRequest): void
     {
         $this->pullRequests[$pullRequest->id()] = $pullRequest;
     }
 
-    public function findOfId(string $id): PullRequest
+    public function findOfId(string $id): PullRequestState
     {
         return $this->pullRequests[$id];
+    }
+
+    public function saveEventStream(EventStream $eventStream): void
+    {
+        $this->eventStream = $eventStream;
+    }
+
+    public function eventStream(): EventStream
+    {
+        return $this->eventStream;
     }
 }

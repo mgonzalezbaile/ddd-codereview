@@ -9,7 +9,7 @@ use CodeReview\Domain\PullRequestRepository;
 use Common\Application\Command\Command;
 use Common\Application\Command\CommandHandler;
 
-class CreatePullRequestCommandHandler implements CommandHandler
+class AssignPullRequestReviewerCommandHandler implements CommandHandler
 {
     /**
      * @var PullRequestRepository
@@ -22,11 +22,11 @@ class CreatePullRequestCommandHandler implements CommandHandler
     }
 
     /**
-     * @param CreatePullRequestCommand $command
+     * @param AssignPullRequestReviewerCommand $command
      */
     public function handle(Command $command): void
     {
-        $events = PullRequest::create($this->repository, $command);
+        $events = PullRequest::assignReviewer($this->repository->findOfId($command->pullRequestId()), $command);
 
         $this->repository->saveEventStream($events);
     }

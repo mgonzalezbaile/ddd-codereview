@@ -4,55 +4,35 @@ declare(strict_types=1);
 
 namespace CodeReview\Domain;
 
+use CodeReview\Application\Command\AssignPullRequestReviewerCommand;
+use CodeReview\Application\Command\CreatePullRequestCommand;
+use CodeReview\Domain\Event\PullRequestCreated;
+use CodeReview\Domain\Event\PullRequestReviewed;
+use CodeReview\Domain\Exception\AssignReviewerException;
+use Common\Domain\Event\EventStream;
 use Webmozart\Assert\Assert;
 
 class PullRequest
 {
-    /**
-     * @var string
-     */
-    private $code;
-
-    /**
-     * @var string
-     */
-    private $id;
-
-    /**
-     * @var string
-     */
-    private $writer;
-
-    public function __construct(PullRequestRepository $repository, string $code, string $writer)
+    public static function create(PullRequestRepository $repository, CreatePullRequestCommand $command): EventStream
     {
-        $this->setId($repository->nextIdentity());
-        $this->setCode($code);
-        $this->setWriter($writer);
-    }
+        $id = $repository->nextIdentity();
 
-    public function id(): string
-    {
-        return $this->id;
-    }
-
-    private function setCode(string $code): void
-    {
-        Assert::notEmpty($code);
-
-        $this->code = $code;
-    }
-
-    private function setId(string $id): void
-    {
+        Assert::notEmpty($command->code());
         Assert::uuid($id);
+        Assert::notEmpty($command->writer());
 
-        $this->id = $id;
+        return EventStream::fromDomainEvents(new PullRequestCreated($id, $command->writer(), $command->code()));
     }
 
-    private function setWriter(string $writer): void
+    public static function assignReviewer(PullRequestState $state, AssignPullRequestReviewerCommand $command): EventStream
     {
-        Assert::notEmpty($writer);
+        Assert::notEmpty($command->reviewer());
 
-        $this->writer = $writer;
+        if (in_array($command->reviewer(), $state->reviewers())) {
+            throw AssignReviewerException::becauseReviewerAlreadyAssigned($command->pullRequestId(), $command->reviewer());
+        }
+
+        return EventStream::fromDomainEvents(new PullRequestReviewed($command->pullRequestId(), $command->reviewer()));
     }
 }

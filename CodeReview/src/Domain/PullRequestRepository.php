@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CodeReview\Domain;
 
+use Common\Domain\Event\EventStream;
+
 interface PullRequestRepository
 {
     public function nextIdentity(): string;
 
-    public function save(PullRequest $pullRequest): void;
+    public function saveEventStream(EventStream $eventStream): void;
 
-    public function findOfId(string $id): PullRequest;
+    public function findOfId(string $id): PullRequestState;
 }

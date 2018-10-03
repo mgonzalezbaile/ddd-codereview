@@ -6,8 +6,9 @@ namespace CodeReviewTest;
 
 use CodeReview\Application\Command\CreatePullRequestCommand;
 use CodeReview\Application\Command\CreatePullRequestCommandHandler;
-use CodeReview\Domain\PullRequest;
+use CodeReview\Domain\Event\PullRequestCreated;
 use CodeReview\Infrastructure\Persistence\InMemory\InMemoryPullRequestRepository;
+use Common\Domain\Event\EventStream;
 use PHPUnit\Framework\TestCase;
 
 class CreatePullRequestTest extends TestCase
@@ -17,18 +18,19 @@ class CreatePullRequestTest extends TestCase
      */
     public function shouldCreatePullRequest()
     {
+        //GIVEN
         $code       = 'some code';
         $id         = 'e0b5b77f-3e19-4002-b710-8a89c6c64836';
         $writer     = 'some writer';
         $repository = InMemoryPullRequestRepository::withFixedId($id);
 
+        //WHEN
         $command        = new CreatePullRequestCommand($code, $writer);
         $commandHandler = new CreatePullRequestCommandHandler($repository);
         $commandHandler->handle($command);
 
-        $pullRequestCreated  = $repository->findOfId($id);
-        $pullRequestExpected = new PullRequest($repository, $code, $writer);
-        $this->assertEquals($pullRequestCreated, $pullRequestExpected);
+        //THEN
+        $this->assertEquals(EventStream::fromDomainEvents(new PullRequestCreated($id, $writer, $code)), $repository->eventStream());
     }
 
     /**
