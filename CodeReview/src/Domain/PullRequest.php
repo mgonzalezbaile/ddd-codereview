@@ -7,10 +7,10 @@ namespace CodeReview\Domain;
 use CodeReview\Application\Command\AssignPullRequestReviewerCommand;
 use CodeReview\Application\Command\CreatePullRequestCommand;
 use CodeReview\Domain\Event\PullRequestCreated;
+use CodeReview\Domain\Event\PullRequestCreationFailed;
 use CodeReview\Domain\Event\PullRequestReviewed;
-use CodeReview\Domain\Exception\AssignReviewerException;
+use CodeReview\Domain\Event\PullRequestReviewerAssignationFailed;
 use Common\Domain\Event\EventStream;
-use Webmozart\Assert\Assert;
 
 class PullRequest
 {
@@ -18,19 +18,25 @@ class PullRequest
     {
         $id = $repository->nextIdentity();
 
-        Assert::notEmpty($command->code());
-        Assert::uuid($id);
-        Assert::notEmpty($command->writer());
+        if (!$command->code()) {
+            return EventStream::fromDomainEvents(new PullRequestCreationFailed($command->writer(), $command->code(), 'empty code'));
+        }
+
+        if (!$command->writer()) {
+            return EventStream::fromDomainEvents(new PullRequestCreationFailed($command->writer(), $command->code(), 'empty writer'));
+        }
 
         return EventStream::fromDomainEvents(new PullRequestCreated($id, $command->writer(), $command->code()));
     }
 
     public static function assignReviewer(PullRequestState $state, AssignPullRequestReviewerCommand $command): EventStream
     {
-        Assert::notEmpty($command->reviewer());
+        if (!$command->reviewer()) {
+            return EventStream::fromDomainEvents(new PullRequestReviewerAssignationFailed($command->pullRequestId(), $command->reviewer(), 'empty reviewer'));
+        }
 
         if (in_array($command->reviewer(), $state->reviewers())) {
-            throw AssignReviewerException::becauseReviewerAlreadyAssigned($command->pullRequestId(), $command->reviewer());
+            return EventStream::fromDomainEvents(new PullRequestReviewerAssignationFailed($command->pullRequestId(), $command->reviewer(), 'max reviewers assigned'));
         }
 
         return EventStream::fromDomainEvents(new PullRequestReviewed($command->pullRequestId(), $command->reviewer()));

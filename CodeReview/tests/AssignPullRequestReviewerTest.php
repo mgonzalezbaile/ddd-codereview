@@ -7,7 +7,7 @@ namespace CodeReviewTest;
 use CodeReview\Application\Command\AssignPullRequestReviewerCommand;
 use CodeReview\Application\Command\AssignPullRequestReviewerCommandHandler;
 use CodeReview\Domain\Event\PullRequestReviewed;
-use CodeReview\Domain\Exception\AssignReviewerException;
+use CodeReview\Domain\Event\PullRequestReviewerAssignationFailed;
 use CodeReview\Domain\PullRequestState;
 use CodeReview\Infrastructure\Persistence\InMemory\InMemoryPullRequestRepository;
 use Common\Domain\Event\EventStream;
@@ -41,17 +41,20 @@ class AssignPullRequestReviewerTest extends TestCase
      */
     public function shouldFail_when_reviewerWasAlreadyAssigned()
     {
-        $this->expectException(AssignReviewerException::class);
-
+        //GIVEN
         $id             = 'e0b5b77f-3e19-4002-b710-8a89c6c64836';
         $reviewer       = 'some reviewer';
         $pullRequest    = new PullRequestState($id, [$reviewer]);
         $repository     = InMemoryPullRequestRepository::withRandomId();
         $repository->save($pullRequest);
 
+        //WHEN
         $command        = new AssignPullRequestReviewerCommand($id, $reviewer);
         $commandHandler = new AssignPullRequestReviewerCommandHandler($repository);
         $commandHandler->handle($command);
+
+        //THEN
+        $this->assertEquals(EventStream::fromDomainEvents(new PullRequestReviewerAssignationFailed($id, $reviewer, 'max reviewers assigned')), $repository->eventStream());
     }
 
     /**
@@ -59,16 +62,19 @@ class AssignPullRequestReviewerTest extends TestCase
      */
     public function shouldFail_when_emptyReviewer()
     {
-        $this->expectException(\InvalidArgumentException::class);
-
-        $id             = 'e0b5b77f-3e19-4002-b710-8a89c6c64836';
-        $pullRequest    = new PullRequestState($id);
-        $repository     = InMemoryPullRequestRepository::withRandomId();
+        //GIVEN
+        $id           = 'e0b5b77f-3e19-4002-b710-8a89c6c64836';
+        $pullRequest  = new PullRequestState($id);
+        $repository   = InMemoryPullRequestRepository::withRandomId();
         $repository->save($pullRequest);
 
+        //WHEN
         $reviewer       = '';
         $command        = new AssignPullRequestReviewerCommand($id, $reviewer);
         $commandHandler = new AssignPullRequestReviewerCommandHandler($repository);
         $commandHandler->handle($command);
+
+        //THEN
+        $this->assertEquals(EventStream::fromDomainEvents(new PullRequestReviewerAssignationFailed($id, $reviewer, 'empty reviewer')), $repository->eventStream());
     }
 }
