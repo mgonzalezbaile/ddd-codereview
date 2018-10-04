@@ -6,7 +6,7 @@ namespace CodeReview\Domain\Event;
 
 use Common\Domain\Event\DomainEvent;
 
-class PullRequestReviewed implements DomainEvent
+class PullRequestReviewerAssigned implements DomainEvent
 {
     /**
      * @var string

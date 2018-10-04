@@ -6,7 +6,7 @@ namespace CodeReviewTest;
 
 use CodeReview\Application\Command\AssignPullRequestReviewerCommand;
 use CodeReview\Application\Command\AssignPullRequestReviewerCommandHandler;
-use CodeReview\Domain\Event\PullRequestReviewed;
+use CodeReview\Domain\Event\PullRequestReviewerAssigned;
 use CodeReview\Domain\Event\PullRequestReviewerAssignationFailed;
 use CodeReview\Domain\PullRequestState;
 use CodeReview\Infrastructure\Persistence\InMemory\InMemoryPullRequestRepository;
@@ -33,7 +33,7 @@ class AssignPullRequestReviewerTest extends TestCase
         $commandHandler->handle($command);
 
         //THEN
-        $this->assertEquals(EventStream::fromDomainEvents(new PullRequestReviewed($id, $reviewer)), $repository->eventStream());
+        $this->assertEquals(EventStream::fromDomainEvents(new PullRequestReviewerAssigned($id, $reviewer)), $repository->eventStream());
     }
 
     /**

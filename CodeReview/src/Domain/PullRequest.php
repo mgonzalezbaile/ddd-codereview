@@ -8,7 +8,7 @@ use CodeReview\Application\Command\AssignPullRequestReviewerCommand;
 use CodeReview\Application\Command\CreatePullRequestCommand;
 use CodeReview\Domain\Event\PullRequestCreated;
 use CodeReview\Domain\Event\PullRequestCreationFailed;
-use CodeReview\Domain\Event\PullRequestReviewed;
+use CodeReview\Domain\Event\PullRequestReviewerAssigned;
 use CodeReview\Domain\Event\PullRequestReviewerAssignationFailed;
 use Common\Domain\Event\EventStream;
 
@@ -39,6 +39,6 @@ class PullRequest
             return EventStream::fromDomainEvents(new PullRequestReviewerAssignationFailed($command->pullRequestId(), $command->reviewer(), 'max reviewers assigned'));
         }
 
-        return EventStream::fromDomainEvents(new PullRequestReviewed($command->pullRequestId(), $command->reviewer()));
+        return EventStream::fromDomainEvents(new PullRequestReviewerAssigned($command->pullRequestId(), $command->reviewer()));
     }
 }
