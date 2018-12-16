@@ -1,14 +1,3 @@
-.DS_Store
-.buildpath
+*/vendor
+*/bin
 .idea
-.php_cs.cache
-.project
-.settings
-vendor
-var/cache/*
-!var/cache/.gitkeep
-var/complaints-panel-cache/*
-!var/complaints-panel-cache/.gitkeep
-var/logs
-.composer/
-bin
